@@ -134,7 +134,7 @@ export default function ForecastPage({ filters }: Props) {
           {forecast && (
             <div>
               <div className="text-xs text-slate-500 dark:text-slate-400">Covers</div>
-              <div className="font-semibold text-slate-900 dark:text-slate-100">{forecast.forecastFrom} → {forecast.forecastTo}</div>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">{fmtMonth(forecast.forecastFrom)} → {fmtMonth(forecast.forecastTo)}</div>
             </div>
           )}
         </div>
