@@ -1,4 +1,4 @@
-# DATA CONTRACT (schemaVersion 2)
+# DATA CONTRACT (schemaVersion 3)
 
 ## manifest.json
 `{schemaVersion: 2, generatedAt: ISO timestamp, asOf: YYYY-MM-DD, disclaimer: string, backcastIncluded: boolean, files: [{name, rows, generatedAt, source: {integrationId, syncId, assetId, sql}}], forecast: null | {experimentId, experimentCreatedAt, problemType, predictionLength, seriesCount, bestModel, metric: {name, value}, backtestError: {mae, wape}, verdict, verdictReasons: [string], forecastAssetId, forecastFrom: YYYY-MM, forecastTo: YYYY-MM}}`
