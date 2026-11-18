@@ -121,7 +121,7 @@ export default function ForecastPage({ filters }: Props) {
               <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 Net Consumption Forecast — {displayPlant}
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">2026-01 to 2026-12 · Aggregated across all materials</p>
+              <p className="text-xs text-slate-400 mt-0.5">{forecast?.forecastFrom ?? '2026-01'} to {forecast?.forecastTo ?? '2026-12'} · Aggregated across all materials</p>
             </div>
             <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-sm p-1">
               {([3, 6, 12] as const).map(h => (

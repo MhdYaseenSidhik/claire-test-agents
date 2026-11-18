@@ -17,6 +17,15 @@ const MOVE_COLORS: Record<string, string> = {
   ACTIVE: '#2563EB', SLOW_MOVING: '#F59E0B', NON_MOVING: '#94A3B8', OBSOLETE: '#EF4444',
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  NORMAL: 'Normal', EXCESS: 'Excess', NON_MOVING: 'Non-Moving',
+  SLOW_MOVING: 'Slow Moving', OBSOLETE: 'Obsolete', STOCKOUT: 'Stockout',
+  UNDERSTOCK: 'Understock', CRITICAL_SHORTAGE: 'Critical Shortage',
+}
+const MOVE_LABELS: Record<string, string> = {
+  ACTIVE: 'Active', SLOW_MOVING: 'Slow Moving', NON_MOVING: 'Non-Moving', OBSOLETE: 'Obsolete',
+}
+
 type DrillLevel = 'plant' | 'group' | 'material'
 
 export default function InventoryHealth({ filters, dims }: Props) {
@@ -152,7 +161,7 @@ export default function InventoryHealth({ filters, dims }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={byStatus} layout="vertical" margin={{ left: 80 }}>
                   <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => fmtInr(v)} />
-                  <YAxis type="category" dataKey="status" tick={{ fontSize: 10 }} width={80} />
+                  <YAxis type="category" dataKey="status" tick={{ fontSize: 10 }} width={100} tickFormatter={(v: string) => STATUS_LABELS[v] ?? v} />
                   <Tooltip formatter={(v: number) => fmtInr(v)} />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                     {byStatus.map(d => <Cell key={d.status} fill={STATUS_COLORS[d.status] ?? '#94A3B8'} />)}
@@ -171,7 +180,7 @@ export default function InventoryHealth({ filters, dims }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={byMove} layout="vertical" margin={{ left: 80 }}>
                   <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => fmtInr(v)} />
-                  <YAxis type="category" dataKey="cls" tick={{ fontSize: 10 }} width={80} />
+                  <YAxis type="category" dataKey="cls" tick={{ fontSize: 10 }} width={100} tickFormatter={(v: string) => MOVE_LABELS[v] ?? v} />
                   <Tooltip formatter={(v: number) => fmtInr(v)} />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                     {byMove.map(d => <Cell key={d.cls} fill={MOVE_COLORS[d.cls] ?? '#94A3B8'} />)}
@@ -300,7 +309,7 @@ export default function InventoryHealth({ filters, dims }: Props) {
                       <td className="px-3 py-2.5"><span className="badge badge-info">{m.abcClass}</span></td>
                       <td className="px-3 py-2.5">
                         <span className={cn('badge', m.inventoryStatus === 'NORMAL' ? 'badge-low' : m.inventoryStatus === 'EXCESS' || m.inventoryStatus === 'OBSOLETE' ? 'badge-high' : 'badge-medium')}>
-                          {m.inventoryStatus}
+                          {STATUS_LABELS[m.inventoryStatus] ?? m.inventoryStatus}
                         </span>
                       </td>
                       <td className="px-3 py-2.5 text-right font-mono">{fmtNum(m.availableQty)}</td>

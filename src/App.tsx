@@ -169,6 +169,16 @@ export default function App() {
           {page === 'replenishment' && <Replenishment filters={filters} dims={dims} />}
           {page === 'forecast' && <ForecastPage filters={filters} />}
           {page === 'plan' && <PlanVsActual filters={filters} dims={dims} />}
+          {manifest?.disclaimer && (
+            <footer className="mt-6 pt-3 border-t border-border-light dark:border-border-dark">
+              <p className="text-xs text-amber-700 dark:text-amber-400">{manifest.disclaimer}</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Data as of {manifest.asOf}
+                {manifest.backcastIncluded ? ' · 2023 backcast included' : ''}
+                {' · Forecast covers 2026-01 to 2026-12'}
+              </p>
+            </footer>
+          )}
         </main>
       </div>
     </div>

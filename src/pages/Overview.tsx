@@ -127,11 +127,6 @@ export default function Overview({ filters, kpis, manifest }: Props) {
         })}
       </div>
 
-      {manifest && (
-        <div className="card p-4 bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
-          <p className="text-xs text-amber-700 dark:text-amber-400">{manifest.disclaimer}</p>
-        </div>
-      )}
     </div>
   )
 }

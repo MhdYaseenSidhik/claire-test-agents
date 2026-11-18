@@ -14,7 +14,8 @@ export function fmtNum(v: number | null | undefined, decimals = 0): string {
 }
 export function fmtPct(v: number | null | undefined): string {
   if (v == null || isNaN(v)) return '—'
-  return `${(v * 100).toFixed(1)}%`
+  // Values are stored as percentages (e.g. 88.7, not 0.887) — do not multiply by 100
+  return `${v.toFixed(1)}%`
 }
 export function fmtMonth(m: string): string {
   if (!m) return ''

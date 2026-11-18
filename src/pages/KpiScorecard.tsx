@@ -138,7 +138,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{cat.label}</div>
-                      <div className="text-xs text-slate-400 dark:text-slate-500">{cat.code}</div>
+                      <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[260px]">{cat.definition ?? cat.code}</div>
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-medium text-slate-900 dark:text-slate-100">
                       {val != null ? fmtVal(val, cat.uom) : '—'}
