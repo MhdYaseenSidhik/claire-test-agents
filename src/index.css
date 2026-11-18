@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    --chart-grid: #E2E8F0;
+    --chart-grid-dark: #334155;
+  }
+  html.dark {
+    --chart-grid: #334155;
+  }
+  body { @apply bg-surface-light text-slate-900 dark:bg-surface-dark dark:text-slate-100; margin: 0; -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-600 rounded-full; }
+
+  /* Recharts tooltip — dark mode */
+  html.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+  }
+  html.dark .recharts-tooltip-wrapper .recharts-tooltip-item {
+    color: #CBD5E1 !important;
+  }
+  html.dark .recharts-tooltip-wrapper .recharts-tooltip-label {
+    color: #94A3B8 !important;
+  }
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center gap-2 px-4 py-2 rounded-sm font-medium text-sm transition-all duration-150 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-accent text-white hover:bg-accent-hover active:scale-95; }
+  .btn-ghost { @apply btn bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800; }
+  .card { @apply bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-lg shadow-sm; }
+  .badge { @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium; }
+  .badge-high { @apply badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400; }
+  .badge-medium { @apply badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400; }
+  .badge-low { @apply badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400; }
+  .badge-info { @apply badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400; }
+  .select-base { @apply w-full px-3 py-2 text-sm rounded-sm border border-border-light dark:border-border-dark bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors; }
+  .skeleton { @apply animate-pulse bg-slate-200 dark:bg-slate-700 rounded; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
