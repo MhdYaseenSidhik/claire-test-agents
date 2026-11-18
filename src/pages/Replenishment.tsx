@@ -32,7 +32,7 @@ export default function Replenishment({ filters, dims: _dims }: Props) {
   const rows = useMemo(() => {
     if (!reorder) return []
     return reorder.rows.filter(r => {
-      const type = matTypeMap.get(r.materialId) ?? ''
+      const type = r.materialType ?? matTypeMap.get(r.materialId) ?? ''
       return (
         (plant === 'ALL_PLANTS' || r.plantId === plant) &&
         (!priority || r.priority === priority) &&
@@ -52,7 +52,7 @@ export default function Replenishment({ filters, dims: _dims }: Props) {
   const typeTotals = useMemo(() => {
     const map = new Map<string, { count: number; value: number }>()
     rows.forEach(r => {
-      const type = matTypeMap.get(r.materialId) ?? 'UNKNOWN'
+      const type = r.materialType ?? matTypeMap.get(r.materialId) ?? 'UNKNOWN'
       const e = map.get(type) ?? { count: 0, value: 0 }
       e.count++; e.value += r.estimatedValueInr ?? 0
       map.set(type, e)
@@ -64,7 +64,7 @@ export default function Replenishment({ filters, dims: _dims }: Props) {
   const groupedByType = useMemo(() => {
     const map = new Map<string, typeof rows>()
     rows.forEach(r => {
-      const type = matTypeMap.get(r.materialId) ?? 'UNKNOWN'
+      const type = r.materialType ?? matTypeMap.get(r.materialId) ?? 'UNKNOWN'
       const arr = map.get(type) ?? []
       arr.push(r)
       map.set(type, arr)

@@ -6,11 +6,11 @@ export interface Dims { plants: Plant[]; materialGroups: MaterialGroup[]; critic
 export interface KpiCatalogEntry { code: string; label: string; uom: string; direction: string; definition: string }
 export interface KpiRow { month: string; plantId: string; kpiCode: string; value: number; scenario: string }
 export interface Kpis { catalog: KpiCatalogEntry[]; rows: KpiRow[] }
-export interface InvSummaryRow { plantId: string; materialGroup: string; criticality: string; movementClass: string; inventoryStatus: string; abcClass: string; materials: number; availableQty: number; valueInr: number }
+export interface InvSummaryRow { plantId: string; materialGroup: string; materialType: string; criticality: string; movementClass: string; inventoryStatus: string; abcClass: string; materials: number; availableQty: number; valueInr: number }
 export interface InvSummary { asOf: string; rows: InvSummaryRow[] }
 export interface MaterialRow { materialId: string; plantId: string; description: string; materialGroup: string; materialType: string; criticality: string; abcClass: string; xyzClass: string; movementClass: string; inventoryStatus: string; availableQty: number; valueInr: number; daysOnHand: number; daysSinceLastConsumption: number; safetyStockQty: number; reorderPointQty: number; maxStockQty: number; trailing12mDemandQty: number }
 export interface Materials { asOf: string; rows: MaterialRow[] }
-export interface ReorderRow { recommendationId: string; materialId: string; plantId: string; priority: string; recommendedPrDate: string; recommendedQty: number; estimatedValueInr: number; availableQty: number; openPrQty: number; openPoQty: number; safetyStockQty: number; reorderPointQty: number; reason: string; shutdownId: string | null }
+export interface ReorderRow { recommendationId: string; materialId: string; plantId: string; priority: string; recommendedPrDate: string; recommendedQty: number; estimatedValueInr: number; availableQty: number; openPrQty: number; openPoQty: number; safetyStockQty: number; reorderPointQty: number; reason: string; shutdownId: string | null; materialType?: string; materialGroup?: string; criticality?: string }
 export interface Reorder { asOf: string; rows: ReorderRow[] }
 export interface PlanVsActualRow { month: string; plantId: string; materialGroup: string; materialType: string; shutdownDriven: boolean; planValueInr: number; actualPoValueInr: number; actualGrValueInr: number; varianceInr: number; variancePct: number }
 export interface PlanVsActual { rows: PlanVsActualRow[] }

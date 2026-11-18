@@ -45,10 +45,11 @@ export default function InventoryHealth({ filters, dims }: Props) {
     if (!summary) return []
     return summary.rows.filter(r =>
       (plant === 'ALL_PLANTS' || r.plantId === plant) &&
+      (!materialType || r.materialType === materialType) &&
       (!materialGroup || r.materialGroup === materialGroup) &&
       (!criticality || r.criticality === criticality)
     )
-  }, [summary, plant, materialGroup, criticality])
+  }, [summary, plant, materialType, materialGroup, criticality])
 
   // Material type breakdown from materials.json
   const typeBreakdown = useMemo(() => {
