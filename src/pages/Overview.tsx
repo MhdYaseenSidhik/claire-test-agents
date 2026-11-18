@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { TrendingUp, TrendingDown, DollarSign, RotateCcw, Clock, ShieldCheck, AlertCircle, AlertTriangle } from 'lucide-react'
-import { Filters, Kpis, Dims, Manifest } from '../types'
-import { fmtInr, fmtNum, fmtPct, fmtMonth, cn } from '../lib/utils'
+import { TrendingUp, TrendingDown, DollarSign, RotateCcw, Clock, ShieldCheck, AlertCircle, AlertTriangle, Info } from 'lucide-react'
+import { Filters, Kpis, Dims, Manifest, Materials } from '../types'
+import { fmtInr, fmtNum, fmtPct, fmtMonth, fmtKpiLabel, cn } from '../lib/utils'
+import { useData } from '../hooks/useData'
 import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts'
 
 const HERO_KPIS = [
@@ -16,7 +17,10 @@ const HERO_KPIS = [
 interface Props { filters: Filters; kpis: Kpis | null; dims: Dims | null; manifest: Manifest | null }
 
 export default function Overview({ filters, kpis, manifest }: Props) {
-  const { plant, monthFrom, monthTo } = filters
+  const { plant, materialType, materialGroup, criticality, monthFrom, monthTo } = filters
+  const hasMaterialFilter = !!materialType || !!materialGroup || !!criticality
+
+  const { data: materials } = useData<Materials>('/data/materials.json')
 
   const latestMonth = useMemo(() => {
     if (!kpis) return ''
@@ -40,6 +44,25 @@ export default function Overview({ filters, kpis, manifest }: Props) {
 
   const getCatalog = (code: string) => kpis?.catalog.find(c => c.code === code)
 
+  // Material type breakdown from materials.json
+  const typeBreakdown = useMemo(() => {
+    if (!materials) return []
+    const filtered = materials.rows.filter(r =>
+      (plant === 'ALL_PLANTS' || r.plantId === plant) &&
+      (!materialGroup || r.materialGroup === materialGroup) &&
+      (!criticality || r.criticality === criticality)
+    )
+    const map = new Map<string, { count: number; value: number }>()
+    filtered.forEach(r => {
+      const e = map.get(r.materialType) ?? { count: 0, value: 0 }
+      e.count++; e.value += r.valueInr
+      map.set(r.materialType, e)
+    })
+    const total = [...map.values()].reduce((s, e) => s + e.value, 0)
+    return [...map.entries()].map(([type, d]) => ({ type, ...d, pct: total > 0 ? d.value / total * 100 : 0 }))
+      .sort((a, b) => b.value - a.value)
+  }, [materials, plant, materialGroup, criticality])
+
   if (!kpis) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -61,6 +84,16 @@ export default function Overview({ filters, kpis, manifest }: Props) {
           {manifest?.disclaimer && <span className="ml-2 text-amber-600 dark:text-amber-400">· POC data</span>}
         </p>
       </div>
+
+      {/* Plant-level label when material filter active */}
+      {hasMaterialFilter && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-sm bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <Info size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-amber-700 dark:text-amber-300">
+            <span className="font-semibold">Plant-level data</span> — KPI tiles show plant-level values and are not filtered by material type, group or criticality. These KPIs are computed at source and cannot be disaggregated.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {HERO_KPIS.map(({ code, label, icon: Icon, fmt }) => {
@@ -107,7 +140,13 @@ export default function Overview({ filters, kpis, manifest }: Props) {
                   </ResponsiveContainer>
                 </div>
               )}
-              {cat && <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">{cat.definition}</p>}
+              {hasMaterialFilter && (
+                <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                  <Info size={10} />
+                  <span>Plant-level · not filtered by material</span>
+                </div>
+              )}
+              {cat && <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">{fmtKpiLabel(cat.definition)}</p>}
             </div>
           )
         })}
@@ -119,14 +158,49 @@ export default function Overview({ filters, kpis, manifest }: Props) {
           const cat = getCatalog(code)
           return (
             <div key={code} className="card p-5 border-l-4 border-l-accent">
-              <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">{cat?.label ?? code}</div>
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">{cat ? fmtKpiLabel(cat.label) : code}</div>
               <div className="text-xl font-bold text-accent">{val != null ? fmtInr(val) : '—'}</div>
-              {cat && <p className="text-xs text-slate-400 mt-1">{cat.definition}</p>}
+              {cat && <p className="text-xs text-slate-400 mt-1">{fmtKpiLabel(cat.definition)}</p>}
+              {hasMaterialFilter && (
+                <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <Info size={10} />
+                  <span>Plant-level · not filtered by material</span>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
 
+      {/* Material Type Breakdown */}
+      <div>
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Value by Material Type</h2>
+        {typeBreakdown.length === 0 ? (
+          <div className="card p-6 text-center text-slate-400 text-sm">No material data for selected filters.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {typeBreakdown.map(t => (
+              <div key={t.type} className="card p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t.type}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{t.type === 'ZSPR' ? 'Spare Parts' : 'Spare Parts Non-Stock'}</div>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{t.pct.toFixed(1)}%</span>
+                </div>
+                <div className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">{fmtInr(t.value)}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">{fmtNum(t.count)} materials</div>
+                <div className="mt-3 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-accent transition-all duration-500"
+                    style={{ width: `${t.pct}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

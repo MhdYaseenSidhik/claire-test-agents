@@ -28,3 +28,15 @@ export function priorityColor(p: string): string {
   if (p === 'MEDIUM') return 'badge-medium'
   return 'badge-low'
 }
+/** Clean up auto-generated KPI labels from snake_case → Title Case conversion */
+export function fmtKpiLabel(label: string): string {
+  return label
+    .replace(/\binr\b/gi, '(INR)')
+    .replace(/\bpct\b/gi, '(%)')
+    .replace(/\bpo\b/gi, 'PO')
+    .replace(/\bpr\b/gi, 'PR')
+    .replace(/\bsku\b/gi, 'SKU')
+    // clean up double parentheses or trailing "metric." from definitions
+    .replace(/\bmetric\.\s*$/i, '')
+    .trim()
+}

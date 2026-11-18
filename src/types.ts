@@ -1,7 +1,8 @@
 export interface Plant { plantId: string; name: string; type: string; region: string }
 export interface MaterialGroup { code: string; name: string }
 export interface CriticalityRef { code: string; name: string }
-export interface Dims { plants: Plant[]; materialGroups: MaterialGroup[]; criticality: CriticalityRef[]; movementClasses: string[]; inventoryStatuses: string[] }
+export interface MaterialType { code: string; name: string }
+export interface Dims { plants: Plant[]; materialGroups: MaterialGroup[]; criticality: CriticalityRef[]; movementClasses: string[]; inventoryStatuses: string[]; materialTypes?: MaterialType[] }
 export interface KpiCatalogEntry { code: string; label: string; uom: string; direction: string; definition: string }
 export interface KpiRow { month: string; plantId: string; kpiCode: string; value: number; scenario: string }
 export interface Kpis { catalog: KpiCatalogEntry[]; rows: KpiRow[] }
@@ -20,4 +21,4 @@ export interface HoldoutByPlantMonth { plantId: string; month: string; actual: n
 export interface ForecastHoldout { kind: string; note: string; experimentId: string; predictionLength: number; metric: { name: string; value: number }; error: { mae: number; wape: number }; leaderboard: { model: string; metric: number }[]; byPlantMonth: HoldoutByPlantMonth[]; series: any[] }
 export interface Manifest { schemaVersion: number; generatedAt: string; asOf: string; disclaimer: string; backcastIncluded: boolean; files: any[]; forecast: { experimentId: string; experimentCreatedAt: string; bestModel: string; metric: { name: string; value: number }; backtestError: { mae: number; wape: number }; forecastAssetId: string; forecastFrom: string; forecastTo: string } }
 export type Page = 'overview' | 'kpis' | 'inventory' | 'replenishment' | 'forecast' | 'plan'
-export interface Filters { plant: string; materialGroup: string; criticality: string; monthFrom: string; monthTo: string }
+export interface Filters { plant: string; materialType: string; materialGroup: string; criticality: string; monthFrom: string; monthTo: string }

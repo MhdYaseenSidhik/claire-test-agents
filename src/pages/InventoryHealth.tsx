@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Package } from 'lucide-react'
 import { Filters, Dims, InvSummary, Materials } from '../types'
 import { fmtInr, fmtNum, cn } from '../lib/utils'
 import { useData } from '../hooks/useData'
@@ -26,10 +26,12 @@ const MOVE_LABELS: Record<string, string> = {
   ACTIVE: 'Active', SLOW_MOVING: 'Slow Moving', NON_MOVING: 'Non-Moving', OBSOLETE: 'Obsolete',
 }
 
+const TYPE_COLORS: Record<string, string> = { ZSPR: '#2563EB', ZSPN: '#7C3AED' }
+
 type DrillLevel = 'plant' | 'group' | 'material'
 
 export default function InventoryHealth({ filters, dims }: Props) {
-  const { plant, materialGroup, criticality } = filters
+  const { plant, materialType, materialGroup, criticality } = filters
   const [drillPlant, setDrillPlant] = useState<string | null>(null)
   const [drillGroup, setDrillGroup] = useState<string | null>(null)
   const [level, setLevel] = useState<DrillLevel>('plant')
@@ -47,6 +49,24 @@ export default function InventoryHealth({ filters, dims }: Props) {
       (!criticality || r.criticality === criticality)
     )
   }, [summary, plant, materialGroup, criticality])
+
+  // Material type breakdown from materials.json
+  const typeBreakdown = useMemo(() => {
+    if (!materials) return []
+    const filtered = materials.rows.filter(r =>
+      (plant === 'ALL_PLANTS' || r.plantId === plant) &&
+      (!materialGroup || r.materialGroup === materialGroup) &&
+      (!criticality || r.criticality === criticality) &&
+      (!materialType || r.materialType === materialType)
+    )
+    const map = new Map<string, { count: number; value: number }>()
+    filtered.forEach(r => {
+      const e = map.get(r.materialType) ?? { count: 0, value: 0 }
+      e.count++; e.value += r.valueInr
+      map.set(r.materialType, e)
+    })
+    return [...map.entries()].map(([type, d]) => ({ type, ...d })).sort((a, b) => b.value - a.value)
+  }, [materials, plant, materialGroup, criticality, materialType])
 
   // Plant-level aggregation
   const byPlant = useMemo(() => {
@@ -106,9 +126,10 @@ export default function InventoryHealth({ filters, dims }: Props) {
       (!drillPlant || r.plantId === drillPlant) &&
       (!drillGroup || r.materialGroup === drillGroup) &&
       (!materialGroup || r.materialGroup === materialGroup) &&
-      (!criticality || r.criticality === criticality)
+      (!criticality || r.criticality === criticality) &&
+      (!materialType || r.materialType === materialType)
     ).sort((a, b) => b.valueInr - a.valueInr)
-  }, [materials, drillPlant, drillGroup, materialGroup, criticality])
+  }, [materials, drillPlant, drillGroup, materialGroup, criticality, materialType])
 
   const totalValue = filteredSummary.reduce((s, r) => s + r.valueInr, 0)
   const totalMaterials = filteredSummary.reduce((s, r) => s + r.materials, 0)
@@ -151,6 +172,37 @@ export default function InventoryHealth({ filters, dims }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Material Type Breakdown */}
+      {typeBreakdown.length > 0 && (
+        <div className="card p-4">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Value by Material Type</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {typeBreakdown.map(t => {
+              const total = typeBreakdown.reduce((s, x) => s + x.value, 0)
+              const pct = total > 0 ? t.value / total * 100 : 0
+              return (
+                <div key={t.type} className="flex items-center gap-4">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: TYPE_COLORS[t.type] ?? '#94A3B8' }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.type}</span>
+                      <span className="text-xs text-slate-500">{pct.toFixed(1)}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: TYPE_COLORS[t.type] ?? '#94A3B8' }} />
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-slate-500">{fmtNum(t.count)} materials</span>
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{fmtInr(t.value)}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Status chart */}
@@ -208,6 +260,15 @@ export default function InventoryHealth({ filters, dims }: Props) {
                 </tr>
               </thead>
               <tbody>
+                {byPlant.length === 0 && !sumLoading && (
+                  <tr><td colSpan={3}>
+                    <div className="p-12 text-center">
+                      <Package size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                      <p className="text-slate-500 dark:text-slate-400 font-medium">No inventory data matches your filters.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Try clearing the material group or criticality filter.</p>
+                    </div>
+                  </td></tr>
+                )}
                 {byPlant.map((p, i) => (
                   <tr key={p.plantId}
                     tabIndex={0}
@@ -222,7 +283,7 @@ export default function InventoryHealth({ filters, dims }: Props) {
                       <div className="font-medium text-slate-900 dark:text-slate-100">{p.name}</div>
                       <div className="text-xs text-slate-400">{p.plantId}</div>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono">{fmtNum(p.materials)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">{fmtNum(p.materials)}</td>
                     <td className="px-4 py-3 text-right font-mono font-medium text-slate-900 dark:text-slate-100">{fmtInr(p.value)}</td>
                   </tr>
                 ))}
@@ -235,7 +296,7 @@ export default function InventoryHealth({ filters, dims }: Props) {
       {level === 'group' && drillPlant && (
         <div className="card overflow-hidden">
           <div className="px-4 py-3 border-b border-border-light dark:border-border-dark">
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Material Groups — click to see materials</h3>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Material Groups — click to drill down</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -259,9 +320,10 @@ export default function InventoryHealth({ filters, dims }: Props) {
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{g.name}</div>
+                      <div className="text-xs text-slate-400">{g.group}</div>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono">{fmtNum(g.materials)}</td>
-                    <td className="px-4 py-3 text-right font-mono font-medium">{fmtInr(g.value)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">{fmtNum(g.materials)}</td>
+                    <td className="px-4 py-3 text-right font-mono font-medium text-slate-900 dark:text-slate-100">{fmtInr(g.value)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -276,45 +338,47 @@ export default function InventoryHealth({ filters, dims }: Props) {
             <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               Materials ({fmtNum(matRows.length)})
             </h3>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="flex gap-2">
               <button className="btn-ghost px-2 py-1 text-xs" disabled={matPage === 0} onClick={() => setMatPage(p => p - 1)}>← Prev</button>
-              <span>{matPage * MAT_PAGE_SIZE + 1}–{Math.min((matPage + 1) * MAT_PAGE_SIZE, matRows.length)} of {matRows.length}</span>
               <button className="btn-ghost px-2 py-1 text-xs" disabled={(matPage + 1) * MAT_PAGE_SIZE >= matRows.length} onClick={() => setMatPage(p => p + 1)}>Next →</button>
             </div>
           </div>
           {matLoading ? (
-            <div className="p-8 text-center text-slate-400">
-              <div className="skeleton h-4 w-48 mx-auto mb-2" />
-              <div className="skeleton h-4 w-32 mx-auto" />
-              <p className="text-xs mt-4">Loading 34,717 materials…</p>
+            <div className="p-8 text-center"><div className="skeleton h-4 w-48 mx-auto" /></div>
+          ) : matRows.length === 0 ? (
+            <div className="p-12 text-center">
+              <Package size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-500 dark:text-slate-400">No materials match your filters.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-border-light dark:border-border-dark">
-                    {['Material', 'Description', 'ABC', 'Status', 'Qty', 'Value', 'Days on Hand'].map(h => (
+                    {['Material', 'Type', 'Group', 'Criticality', 'ABC', 'Movement', 'Status', 'Value', 'Days on Hand'].map(h => (
                       <th key={h} className="text-left px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {matRows.slice(matPage * MAT_PAGE_SIZE, (matPage + 1) * MAT_PAGE_SIZE).map((m, i) => (
-                    <tr key={m.materialId + m.plantId}
+                  {matRows.slice(matPage * MAT_PAGE_SIZE, (matPage + 1) * MAT_PAGE_SIZE).map((r, i) => (
+                    <tr key={`${r.materialId}-${r.plantId}`}
                       className={cn('border-b border-border-light dark:border-border-dark',
-                        i % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-slate-800/20')}
-                    >
-                      <td className="px-3 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400">{m.materialId}</td>
-                      <td className="px-3 py-2.5 max-w-[200px] truncate text-slate-900 dark:text-slate-100" title={m.description}>{m.description}</td>
-                      <td className="px-3 py-2.5"><span className="badge badge-info">{m.abcClass}</span></td>
+                        i % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-slate-800/20')}>
                       <td className="px-3 py-2.5">
-                        <span className={cn('badge', m.inventoryStatus === 'NORMAL' ? 'badge-low' : m.inventoryStatus === 'EXCESS' || m.inventoryStatus === 'OBSOLETE' ? 'badge-high' : 'badge-medium')}>
-                          {STATUS_LABELS[m.inventoryStatus] ?? m.inventoryStatus}
-                        </span>
+                        <div className="font-mono text-xs text-slate-700 dark:text-slate-300">{r.materialId}</div>
+                        <div className="text-xs text-slate-400 truncate max-w-[160px]" title={r.description}>{r.description}</div>
                       </td>
-                      <td className="px-3 py-2.5 text-right font-mono">{fmtNum(m.availableQty)}</td>
-                      <td className="px-3 py-2.5 text-right font-mono font-medium">{fmtInr(m.valueInr)}</td>
-                      <td className="px-3 py-2.5 text-right font-mono">{fmtNum(m.daysOnHand, 0)}</td>
+                      <td className="px-3 py-2.5">
+                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-sm" style={{ background: (TYPE_COLORS[r.materialType] ?? '#94A3B8') + '20', color: TYPE_COLORS[r.materialType] ?? '#94A3B8' }}>{r.materialType}</span>
+                      </td>
+                      <td className="px-3 py-2.5 text-xs text-slate-500">{r.materialGroup}</td>
+                      <td className="px-3 py-2.5 text-xs text-slate-500">{r.criticality}</td>
+                      <td className="px-3 py-2.5 text-xs font-mono text-slate-500">{r.abcClass}</td>
+                      <td className="px-3 py-2.5 text-xs text-slate-500">{r.movementClass}</td>
+                      <td className="px-3 py-2.5 text-xs text-slate-500">{r.inventoryStatus}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-xs font-medium text-slate-900 dark:text-slate-100">{fmtInr(r.valueInr)}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-xs text-slate-500">{r.daysOnHand > 0 ? fmtNum(r.daysOnHand, 0) : '—'}</td>
                     </tr>
                   ))}
                 </tbody>

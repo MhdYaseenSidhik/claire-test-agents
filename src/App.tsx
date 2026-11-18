@@ -25,7 +25,7 @@ export default function App() {
   const [dark, setDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [filters, setFilters] = useState<Filters>({ plant: 'ALL_PLANTS', materialGroup: '', criticality: '', monthFrom: '2023-01', monthTo: '2025-12' })
+  const [filters, setFilters] = useState<Filters>({ plant: 'ALL_PLANTS', materialType: '', materialGroup: '', criticality: '', monthFrom: '2023-01', monthTo: '2025-12' })
 
   useEffect(() => { document.documentElement.classList.toggle('dark', dark) }, [dark])
 
@@ -36,8 +36,9 @@ export default function App() {
   const plants = dims?.plants ?? []
   const materialGroups = dims?.materialGroups ?? []
   const criticalities = dims?.criticality ?? []
+  const materialTypes = dims?.materialTypes ?? []
 
-  const hasActiveFilters = filters.plant !== 'ALL_PLANTS' || !!filters.materialGroup || !!filters.criticality
+  const hasActiveFilters = filters.plant !== 'ALL_PLANTS' || !!filters.materialType || !!filters.materialGroup || !!filters.criticality
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-light dark:bg-surface-dark">
@@ -51,7 +52,7 @@ export default function App() {
         <nav className="flex-1 overflow-y-auto py-3 px-2">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => { setPage(id); setSidebarOpen(false) }}
-              className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-colors mb-0.5',
+              className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-colors mb-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1',
                 page === id ? 'bg-accent/10 text-accent dark:bg-accent/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100')}>
               <Icon size={16} />{label}
             </button>
@@ -79,6 +80,10 @@ export default function App() {
               <select className="select-base w-auto min-w-[140px]" value={filters.plant} onChange={e => setFilters(f => ({ ...f, plant: e.target.value }))} aria-label="Plant">
                 <option value="ALL_PLANTS">All Plants</option>
                 {plants.map(p => <option key={p.plantId} value={p.plantId}>{p.name}</option>)}
+              </select>
+              <select className="select-base w-auto min-w-[120px]" value={filters.materialType} onChange={e => setFilters(f => ({ ...f, materialType: e.target.value }))} aria-label="Material Type">
+                <option value="">All Types</option>
+                {materialTypes.map(t => <option key={t.code} value={t.code}>{t.code}</option>)}
               </select>
               <select className="select-base w-auto min-w-[140px]" value={filters.materialGroup} onChange={e => setFilters(f => ({ ...f, materialGroup: e.target.value }))} aria-label="Material Group">
                 <option value="">All Groups</option>
@@ -139,6 +144,10 @@ export default function App() {
                   <option value="ALL_PLANTS">All Plants</option>
                   {plants.map(p => <option key={p.plantId} value={p.plantId}>{p.name}</option>)}
                 </select>
+                <select className="select-base" value={filters.materialType} onChange={e => setFilters(f => ({ ...f, materialType: e.target.value }))} aria-label="Material Type">
+                  <option value="">All Types</option>
+                  {materialTypes.map(t => <option key={t.code} value={t.code}>{t.code}</option>)}
+                </select>
                 <select className="select-base" value={filters.materialGroup} onChange={e => setFilters(f => ({ ...f, materialGroup: e.target.value }))} aria-label="Material Group">
                   <option value="">All Groups</option>
                   {materialGroups.map(g => <option key={g.code} value={g.code}>{g.name}</option>)}
@@ -147,14 +156,14 @@ export default function App() {
                   <option value="">All Criticality</option>
                   {criticalities.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 overflow-hidden">
                   <div>
                     <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block" htmlFor="mob-month-from">From</label>
-                    <input id="mob-month-from" type="month" className="select-base" value={filters.monthFrom} min="2023-01" max={filters.monthTo} onChange={e => setFilters(f => ({ ...f, monthFrom: e.target.value }))} aria-label="From month" />
+                    <input id="mob-month-from" type="month" className="select-base text-xs" value={filters.monthFrom} min="2023-01" max={filters.monthTo} onChange={e => setFilters(f => ({ ...f, monthFrom: e.target.value }))} aria-label="From month" />
                   </div>
                   <div>
                     <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block" htmlFor="mob-month-to">To</label>
-                    <input id="mob-month-to" type="month" className="select-base" value={filters.monthTo} min={filters.monthFrom} max="2026-12" onChange={e => setFilters(f => ({ ...f, monthTo: e.target.value }))} aria-label="To month" />
+                    <input id="mob-month-to" type="month" className="select-base text-xs" value={filters.monthTo} min={filters.monthFrom} max="2026-12" onChange={e => setFilters(f => ({ ...f, monthTo: e.target.value }))} aria-label="To month" />
                   </div>
                 </div>
               </div>

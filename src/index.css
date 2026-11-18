@@ -17,6 +17,19 @@
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
   ::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-600 rounded-full; }
+
+  /* Recharts tooltip — dark mode */
+  html.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+  }
+  html.dark .recharts-tooltip-wrapper .recharts-tooltip-item {
+    color: #CBD5E1 !important;
+  }
+  html.dark .recharts-tooltip-wrapper .recharts-tooltip-label {
+    color: #94A3B8 !important;
+  }
 }
 
 @layer components {

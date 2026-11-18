@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { TrendingUp, TrendingDown, Minus, Search } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Search, Info } from 'lucide-react'
 import { Filters, Kpis } from '../types'
-import { fmtInr, fmtNum, fmtPct, fmtMonth, cn } from '../lib/utils'
+import { fmtInr, fmtNum, fmtPct, fmtMonth, fmtKpiLabel, cn } from '../lib/utils'
 import { useChartColors } from '../hooks/useChartColors'
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 
@@ -14,7 +14,8 @@ function fmtVal(v: number, uom: string): string {
 }
 
 export default function KpiScorecard({ filters, kpis }: Props) {
-  const { plant, monthFrom, monthTo } = filters
+  const { plant, materialType, materialGroup, criticality, monthFrom, monthTo } = filters
+  const hasMaterialFilter = !!materialType || !!materialGroup || !!criticality
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
   const { grid } = useChartColors()
@@ -58,6 +59,15 @@ export default function KpiScorecard({ filters, kpis }: Props) {
         <span className="text-sm text-slate-500 dark:text-slate-400">{fmtMonth(latestMonth)}</span>
       </div>
 
+      {hasMaterialFilter && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-sm bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <Info size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-amber-700 dark:text-amber-300">
+            <span className="font-semibold">Plant-level data</span> — KPI values are plant-level and are not filtered by material type, group or criticality. These KPIs are computed at source and cannot be disaggregated by material dimension.
+          </p>
+        </div>
+      )}
+
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
@@ -72,7 +82,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
         <div className="card p-5">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{selectedCat.label}</h2>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{fmtKpiLabel(selectedCat.label)}</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{selectedCat.definition}</p>
             </div>
             <button className="btn-ghost text-xs px-2 py-1" onClick={() => setSelected(null)}>Close</button>
@@ -126,7 +136,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
                     tabIndex={0}
                     role="button"
                     aria-pressed={selected === cat.code}
-                    aria-label={`${cat.label} — click to view trend`}
+                    aria-label={`${fmtKpiLabel(cat.label)} — click to view trend`}
                     className={cn(
                       'border-b border-border-light dark:border-border-dark cursor-pointer transition-colors',
                       i % 2 === 0 ? 'bg-white dark:bg-card-dark' : 'bg-slate-50/50 dark:bg-slate-800/20',
@@ -137,7 +147,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(selected === cat.code ? null : cat.code) } }}
                   >
                     <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900 dark:text-slate-100">{cat.label}</div>
+                      <div className="font-medium text-slate-900 dark:text-slate-100">{fmtKpiLabel(cat.label)}</div>
                       <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[260px]">{cat.definition ?? cat.code}</div>
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-medium text-slate-900 dark:text-slate-100">
