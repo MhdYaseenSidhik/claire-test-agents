@@ -54,8 +54,8 @@ export default function Overview({ filters, kpis, manifest }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Overview</h1>
+      <div className="pb-4 border-b border-border-light dark:border-border-dark">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Overview</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
           Latest: <span className="font-medium">{fmtMonth(latestMonth)}</span>
           {manifest?.disclaimer && <span className="ml-2 text-amber-600 dark:text-amber-400">· POC data</span>}

@@ -32,8 +32,8 @@ export default function Replenishment({ filters, dims }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Replenishment</h1>
+      <div className="flex items-center justify-between pb-4 border-b border-border-light dark:border-border-dark">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Replenishment</h1>
         <div className="text-sm text-slate-500 dark:text-slate-400">
           {fmtNum(rows.length)} recommendations · {fmtInr(totalValue)}
         </div>

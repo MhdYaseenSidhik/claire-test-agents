@@ -4,7 +4,14 @@
 
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
-  html { font-family: 'Inter', system-ui, sans-serif; }
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    --chart-grid: #E2E8F0;
+    --chart-grid-dark: #334155;
+  }
+  html.dark {
+    --chart-grid: #334155;
+  }
   body { @apply bg-surface-light text-slate-900 dark:bg-surface-dark dark:text-slate-100; margin: 0; -webkit-font-smoothing: antialiased; }
   :focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }

@@ -106,6 +106,9 @@ export default function InventoryHealth({ filters, dims }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="pb-4 border-b border-border-light dark:border-border-dark">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Inventory Health</h1>
+      </div>
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 text-sm">
         <button
@@ -198,9 +201,13 @@ export default function InventoryHealth({ filters, dims }: Props) {
               <tbody>
                 {byPlant.map((p, i) => (
                   <tr key={p.plantId}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Drill into ${p.name}`}
                     className={cn('border-b border-border-light dark:border-border-dark cursor-pointer hover:bg-accent/5 transition-colors',
                       i % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-slate-800/20')}
                     onClick={() => { setDrillPlant(p.plantId); setLevel('group') }}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDrillPlant(p.plantId); setLevel('group') } }}
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{p.name}</div>
@@ -233,9 +240,13 @@ export default function InventoryHealth({ filters, dims }: Props) {
               <tbody>
                 {byGroup.map((g, i) => (
                   <tr key={g.group}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Drill into ${g.name}`}
                     className={cn('border-b border-border-light dark:border-border-dark cursor-pointer hover:bg-accent/5 transition-colors',
                       i % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-slate-800/20')}
                     onClick={() => { setDrillGroup(g.group); setLevel('material'); setMatPage(0) }}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDrillGroup(g.group); setLevel('material'); setMatPage(0) } }}
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{g.name}</div>

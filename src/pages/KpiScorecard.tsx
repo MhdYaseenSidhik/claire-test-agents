@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, Search } from 'lucide-react'
 import { Filters, Kpis } from '../types'
 import { fmtInr, fmtNum, fmtPct, fmtMonth, cn } from '../lib/utils'
+import { useChartColors } from '../hooks/useChartColors'
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 
 interface Props { filters: Filters; kpis: Kpis | null }
@@ -16,6 +17,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
   const { plant, monthFrom, monthTo } = filters
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
+  const { grid } = useChartColors()
 
   const months = useMemo(() => {
     if (!kpis) return []
@@ -51,8 +53,8 @@ export default function KpiScorecard({ filters, kpis }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">KPI Scorecard</h1>
+      <div className="flex items-center justify-between pb-4 border-b border-border-light dark:border-border-dark">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">KPI Scorecard</h1>
         <span className="text-sm text-slate-500 dark:text-slate-400">{fmtMonth(latestMonth)}</span>
       </div>
 
@@ -78,7 +80,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-700" />
+                <CartesianGrid strokeDasharray="3 3" stroke={grid} />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} tickFormatter={fmtMonth} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={v => fmtVal(v, selectedCat.uom)} width={70} />
                 <Tooltip
@@ -121,6 +123,10 @@ export default function KpiScorecard({ filters, kpis }: Props) {
                 return (
                   <tr
                     key={cat.code}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={selected === cat.code}
+                    aria-label={`${cat.label} — click to view trend`}
                     className={cn(
                       'border-b border-border-light dark:border-border-dark cursor-pointer transition-colors',
                       i % 2 === 0 ? 'bg-white dark:bg-card-dark' : 'bg-slate-50/50 dark:bg-slate-800/20',
@@ -128,6 +134,7 @@ export default function KpiScorecard({ filters, kpis }: Props) {
                       selected === cat.code && 'bg-accent/10 dark:bg-accent/20'
                     )}
                     onClick={() => setSelected(selected === cat.code ? null : cat.code)}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(selected === cat.code ? null : cat.code) } }}
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{cat.label}</div>

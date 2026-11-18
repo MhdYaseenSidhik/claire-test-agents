@@ -3,6 +3,7 @@ import { Brain, TrendingUp, BarChart2 } from 'lucide-react'
 import { Filters, Forecast, ForecastHoldout } from '../types'
 import { fmtNum, fmtMonth, cn } from '../lib/utils'
 import { useData } from '../hooks/useData'
+import { useChartColors } from '../hooks/useChartColors'
 import {
   ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Legend, ReferenceLine
@@ -39,11 +40,12 @@ export default function ForecastPage({ filters }: Props) {
   }, [holdout, plant])
 
   const displayPlant = plant === 'ALL_PLANTS' ? 'HZL_DEMO_01' : plant
+  const { grid } = useChartColors()
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Demand Forecast</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3 pb-4 border-b border-border-light dark:border-border-dark">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Demand Forecast</h1>
         <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-sm p-1">
           {(['forecast', 'backtest'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
@@ -146,7 +148,7 @@ export default function ForecastPage({ filters }: Props) {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={forecastChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-700" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={grid} />
                   <XAxis dataKey="month" tick={{ fontSize: 10 }} tickFormatter={fmtMonth} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={v => fmtNum(v, 0)} />
                   <Tooltip
@@ -190,7 +192,7 @@ export default function ForecastPage({ filters }: Props) {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={backtestChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-700" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={grid} />
                   <XAxis dataKey="month" tick={{ fontSize: 10 }} tickFormatter={fmtMonth} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={v => fmtNum(v, 0)} />
                   <Tooltip

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Filters, Dims, PlanVsActual as PVAType } from '../types'
 import { fmtInr, fmtNum, fmtMonth, cn } from '../lib/utils'
 import { useData } from '../hooks/useData'
+import { useChartColors } from '../hooks/useChartColors'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 
 interface Props { filters: Filters; dims: Dims | null }
@@ -11,6 +12,7 @@ export default function PlanVsActual({ filters, dims }: Props) {
   const [groupBy, setGroupBy] = useState<'month' | 'group'>('month')
 
   const { data: pva, loading } = useData<PVAType>('/data/plan_vs_actual.json')
+  const { grid } = useChartColors()
 
   const filtered = useMemo(() => {
     if (!pva) return []
@@ -52,8 +54,8 @@ export default function PlanVsActual({ filters, dims }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Plan vs Actual</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3 pb-4 border-b border-border-light dark:border-border-dark">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Plan vs Actual</h1>
         <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-sm p-1">
           {(['month', 'group'] as const).map(g => (
             <button key={g} onClick={() => setGroupBy(g)}
@@ -92,7 +94,7 @@ export default function PlanVsActual({ filters, dims }: Props) {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-700" />
+                <CartesianGrid strokeDasharray="3 3" stroke={grid} />
                 <XAxis dataKey="label" tick={{ fontSize: 10 }} angle={groupBy === 'month' ? -30 : 0} textAnchor={groupBy === 'month' ? 'end' : 'middle'} />
                 <YAxis tick={{ fontSize: 10 }} tickFormatter={v => fmtInr(v)} width={70} />
                 <Tooltip formatter={(v: number) => fmtInr(v)} />
